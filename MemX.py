@@ -1,7 +1,7 @@
 """
 MemX Python Library
-Made by im-razvan / Version 1.0.1
-11 February 2024
+Made by im-razvan / Version 1.0.2
+12 February 2024
 """
 
 import ctypes
@@ -37,6 +37,12 @@ class MemX:
         if ret == 5: raise Exception("Please run this app with SUDO.")
         elif ret != 0 : raise Exception("Could not get task for pid %d" % self.pid)
 
+    def read_short(self, address):
+        return unpack('h', self.read_bytes(address, 2))[0]
+    
+    def read_ushort(self, address):
+        return unpack('H', self.read_bytes(address, 2))[0]
+
     def read_int(self, address):
         return unpack('i', self.read_bytes(address, 4))[0]
 
@@ -55,6 +61,18 @@ class MemX:
     def read_double(self, address):
         return unpack('d', self.read_bytes(address, 8))[0]
 
+    def read_longlong(self, address):
+        return unpack('q', self.read_bytes(address, 8))[0]
+    
+    def read_ulonglong(self, address):
+        return unpack('Q', self.read_bytes(address, 8))[0]
+
+    def write_short(self, address, value):
+        self.write_bytes(address, pack('h', value))
+        
+    def write_ushort(self, address, value):
+        self.write_bytes(address, pack('H', value))
+
     def write_int(self, address, value):
         self.write_bytes(address, pack('i', value))
         
@@ -72,6 +90,12 @@ class MemX:
 
     def write_double(self, address, value):
         self.write_bytes(address, pack('d', value))
+
+    def write_longlong(self, address, value):
+        self.write_bytes(address, pack('q', value))
+
+    def write_ulonglong(self, address, value):
+        self.write_bytes(address, pack('Q', value))
 
     def read_bytes(self, address, bytes):
         pdata = ctypes.c_void_p(0)

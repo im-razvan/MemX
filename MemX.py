@@ -1,7 +1,7 @@
 """
 MemX Python Library
-Made by im-razvan / Version 1.0
-10 February 2024
+Made by im-razvan / Version 1.0.1
+11 February 2024
 """
 
 import ctypes
@@ -12,9 +12,19 @@ from os import popen
 libc = ctypes.CDLL(None)
 
 def pid_for_pname(process_name):
+    procs = []
     for proc in process_iter():
         if process_name == proc.name():
-            return proc.pid
+            procs.append(proc)
+    if len(procs) == 1:
+        return procs[0].pid
+    elif len(procs)>1:
+        print(f"[MemX] Found multiple processes named {process_name}:")
+        i = 1
+        for proc in procs:
+            print(f"    {i}. PID: {proc.pid}, APP: {proc.exe()}")
+            i += 1
+        return procs[int(input("[MemX] Enter your choice: ")) - 1].pid
     return None
 
 class MemX:

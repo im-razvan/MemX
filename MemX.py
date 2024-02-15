@@ -1,12 +1,13 @@
 """
 MemX Python Library
-Made by im-razvan / Version 1.0.2
-12 February 2024
+Made by im-razvan / Version 1.0.3
+15 February 2024
 """
 
 import ctypes
 from psutil import process_iter
 from struct import unpack, pack
+from re import search
 from os import popen
 
 libc = ctypes.CDLL(None)
@@ -25,9 +26,9 @@ def pid_for_pname(process_name):
             print(f"    {i}. PID: {proc.pid}, APP: {proc.exe()}")
             i += 1
         return procs[int(input("[MemX] Enter your choice: ")) - 1].pid
-    return None
+    return None        
 
-class MemX:
+class Process:
     def __init__(self, ProcessName: str): 
         self.pid = pid_for_pname(ProcessName)
         assert (self.pid is not None), "Couldn't find a running instance of %s" % ProcessName
@@ -114,11 +115,23 @@ class MemX:
         if ret != 0:
             raise Exception("mach_vm_write returned : %s" % ret)
 
-    # TODO: Find a normal way
-    # It's working but eh
-    def get_module_base(self, module):
-        regs = popen(f"vmmap {self.pid} | grep __TEXT").read().split("\n")
+class Module:
+    # TODO: Find a normal & faster way
+    def __init__(self, Process: Process, ModuleName: str):
+        self.proc = Process
+        regs = popen(f"vmmap {self.proc.pid} | grep __TEXT").read().split("\n")
+        self.BaseAddress = None
+        self.Size = None
         for reg in regs:
-            if module in reg:
-                r = int(reg.split("__TEXT")[1].split("-")[0], 16)
-                return r
+            if ModuleName in reg:
+                ax = reg.split("__TEXT")[1].split("-")
+                self.BaseAddress = int(ax[0], 16)
+                self.Size = int(ax[1].split(" ")[0], 16) - self.BaseAddress
+                break
+
+    def search_pattern(self, pattern: bytes):
+        moduleBytes = self.proc.read_bytes(self.BaseAddress, self.Size)
+        s = search(pattern, moduleBytes)
+        if s != None:
+            return self.BaseAddress + s.start()
+        return None

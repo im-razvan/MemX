@@ -1,7 +1,7 @@
 """
 MemX Python Library
-Made by im-razvan / Version 1.0.3
-15 February 2024
+Made by im-razvan / Version 1.0.4
+18 February 2024
 """
 
 import ctypes
@@ -11,6 +11,8 @@ from re import search
 from os import popen
 
 libc = ctypes.CDLL(None)
+
+VM_PROT_ALL = 0x07
 
 def pid_for_pname(process_name):
     procs = []
@@ -111,9 +113,10 @@ class Process:
     def write_bytes(self, address, data):
         data_buffer = ctypes.create_string_buffer(data)
         data_len = ctypes.c_ulonglong(len(data))
-        ret = libc.mach_vm_write(self.task, ctypes.c_ulonglong(address), data_buffer, data_len)
-        if ret != 0:
-            raise Exception("mach_vm_write returned : %s" % ret)
+        libc.mach_vm_protect(self.task, ctypes.c_ulonglong(address), data_len,ctypes.c_bool(False), ctypes.c_int(VM_PROT_ALL))
+        res = libc.mach_vm_write(self.task, ctypes.c_ulonglong(address), data_buffer, data_len)
+        if res != 0:
+            raise Exception("mach_vm_write returned : %s" % res)
 
 class Module:
     # TODO: Find a normal & faster way
@@ -128,6 +131,10 @@ class Module:
                 self.BaseAddress = int(ax[0], 16)
                 self.Size = int(ax[1].split(" ")[0], 16) - self.BaseAddress
                 break
+
+    def search_IDA_pattern(self, ida_pattern: str):
+        re_format = bytes.fromhex(ida_pattern.replace("?", "2E"))
+        return self.search_pattern(re_format)
 
     def search_pattern(self, pattern: bytes):
         moduleBytes = self.proc.read_bytes(self.BaseAddress, self.Size)

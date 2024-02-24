@@ -1,7 +1,7 @@
 """
 MemX Python Library
-Made by im-razvan / Version 1.0.4
-18 February 2024
+Made by im-razvan / Version 1.0.5
+24 February 2024
 """
 
 import ctypes
@@ -69,6 +69,12 @@ class Process:
     
     def read_ulonglong(self, address):
         return unpack('Q', self.read_bytes(address, 8))[0]
+    
+    def read_vec2f(self, address) -> tuple:
+        return unpack('ff', self.read_bytes(address, 8))
+    
+    def read_vec3f(self, address) -> tuple:
+        return unpack('fff', self.read_bytes(address, 12))
 
     def write_short(self, address, value):
         self.write_bytes(address, pack('h', value))
@@ -99,6 +105,12 @@ class Process:
 
     def write_ulonglong(self, address, value):
         self.write_bytes(address, pack('Q', value))
+
+    def write_vec2f(self, address, value):
+        self.write_bytes(address, pack('ff', value))
+
+    def write_vec3f(self, address, value):
+        self.write_bytes(address, pack('fff', value))
 
     def read_bytes(self, address, bytes):
         pdata = ctypes.c_void_p(0)

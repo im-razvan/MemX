@@ -1,8 +1,4 @@
-"""
-MemX Python Library
-Made by im-razvan / Version 1.0.5
-24 February 2024
-"""
+# main.py
 
 import ctypes
 from psutil import process_iter

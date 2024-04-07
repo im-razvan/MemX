@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='memx',
-    version='1.0.6',
+    version='1.0.7',
     author="Iacob Razvan Mihai",
     author_email="razvan.iacob@protonmail.com",
     description='A Python Library to Manipulate macOS Processes.',

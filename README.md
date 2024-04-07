@@ -3,9 +3,10 @@
 ---
 ### Example usage:
 ```
-from MemX import *
+from memx import *
 
 mx = Process("assaultcube")
+mx.fetch_modules()
 base = Module(mx, "assaultcube").BaseAddress
 
 s = mx.read_longlong(base + 0x1D9EF0)

@@ -29,6 +29,7 @@ def pid_for_pname(process_name):
 class Process:
     def __init__(self, ProcessName: str): 
         self.pid = pid_for_pname(ProcessName)
+        self.TEXT = []
         assert (self.pid is not None), "Couldn't find a running instance of %s" % ProcessName
         self.task = ctypes.c_uint32()
         self.mytask=libc.mach_task_self()
@@ -126,14 +127,23 @@ class Process:
         if res != 0:
             raise Exception("mach_vm_write returned : %s" % res)
 
+    # This was added to speed up the module getting
+    def fetch_modules(self):
+        regs = popen(f"vmmap {self.pid} | grep __TEXT").read().split("\n")
+        self.TEXT = []
+        for reg in regs:
+            if "__TEXT" in reg:
+                self.TEXT.append(reg)
+
 class Module:
     # TODO: Find a normal & faster way
     def __init__(self, Process: Process, ModuleName: str):
         self.proc = Process
-        regs = popen(f"vmmap {self.proc.pid} | grep __TEXT").read().split("\n")
+        if not self.proc.TEXT:
+            raise Exception("Please use fetch_modules() first.")
         self.BaseAddress = None
         self.Size = None
-        for reg in regs:
+        for reg in self.proc.TEXT:
             if ModuleName in reg:
                 ax = reg.split("__TEXT")[1].split("-")
                 self.BaseAddress = int(ax[0], 16)
